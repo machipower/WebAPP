@@ -1,4 +1,5 @@
 {
+  "api": {},
   "auth": {
     "frontenda4ba1b60": {
       "customAuth": false,
@@ -25,6 +26,20 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "Cognito"
+    }
+  },
+  "function": {
+    "createUser": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "storage": {
+    "userresumestorage": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3"
     }
   }
 }
