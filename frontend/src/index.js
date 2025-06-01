@@ -1,7 +1,7 @@
 // index.js
 import React from "react";
 import ReactDOM from "react-dom/client";
-import AuthWrapper from "./AuthWrapper";
+import AuthApp from "./AuthApp";
 import { AuthProvider } from "react-oidc-context";
 
 const cognitoAuthConfig = {
@@ -18,7 +18,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <AuthProvider {...cognitoAuthConfig}>
-      <App />
+      <AuthApp />
     </AuthProvider>
   </React.StrictMode>
 );
