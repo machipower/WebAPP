@@ -1,10 +1,19 @@
 export type AmplifyDependentResourcesAttributes = {
+  "api": {
+    "userapi": {
+      "ApiId": "string",
+      "ApiName": "string",
+      "RootUrl": "string"
+    }
+  },
   "auth": {
     "frontenda4ba1b60": {
       "AppClientID": "string",
       "AppClientIDWeb": "string",
+      "HostedUIDomain": "string",
       "IdentityPoolId": "string",
       "IdentityPoolName": "string",
+      "OAuthMetadata": "string",
       "UserPoolArn": "string",
       "UserPoolId": "string",
       "UserPoolName": "string"
@@ -20,7 +29,7 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "storage": {
-    "userresumestorage": {
+    "userResumeStorage": {
       "BucketName": "string",
       "Region": "string"
     }

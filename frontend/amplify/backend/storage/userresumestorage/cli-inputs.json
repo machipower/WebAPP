@@ -1,14 +1,15 @@
 {
-  "resourceName": "userresumestorage",
-  "policyUUID": "6d582241",
-  "bucketName": "frontendf6ba6d464b5d4e25b69e6e23727b2872",
-  "storageAccess": "auth",
-  "guestAccess": [],
+  "resourceName": "userResumeStorage",
+  "policyUUID": "59feff42",
+  "bucketName": "frontend2f0e8131c7e241409a0fc2df5ef01b43",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
   "authAccess": [
     "CREATE_AND_UPDATE",
     "READ",
     "DELETE"
   ],
-  "triggerFunction": "NONE",
   "groupAccess": {}
 }

@@ -15,11 +15,17 @@
       "auth": {
         "frontenda4ba1b60": {}
       },
-      "storage": {
-        "userresumestorage": {}
-      },
       "function": {
-        "createUser": {}
+        "createUser": {
+          "deploymentBucketName": "amplify-frontend-dev-b3213-deployment",
+          "s3Key": "amplify-builds/createUser-7747354476633674544b-build.zip"
+        }
+      },
+      "api": {
+        "userapi": {}
+      },
+      "storage": {
+        "userResumeStorage": {}
       }
     }
   }

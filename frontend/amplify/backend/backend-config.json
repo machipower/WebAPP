@@ -1,5 +1,20 @@
 {
-  "api": {},
+  "api": {
+    "userapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "createUser"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
   "auth": {
     "frontenda4ba1b60": {
       "customAuth": false,
@@ -35,8 +50,26 @@
       "service": "Lambda"
     }
   },
+  "parameters": {
+    "AMPLIFY_function_createUser_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "createUser"
+        }
+      ]
+    },
+    "AMPLIFY_function_createUser_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "createUser"
+        }
+      ]
+    }
+  },
   "storage": {
-    "userresumestorage": {
+    "userResumeStorage": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "S3"
