@@ -182,7 +182,7 @@ export default function Invites() {
                 WebkitTextFillColor: 'transparent',
                 cursor: 'pointer'
               }}
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/competitions')}
               >
                 MachiPower
               </h1>

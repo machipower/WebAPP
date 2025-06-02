@@ -121,9 +121,7 @@ export default function Register() {
           }}>
             Create Account
           </h2>
-          <p style={{ color: '#6b7280', fontSize: '16px' }}>
-            註冊帳號
-          </p>
+        
         </div>
 
         {/* 註冊表單 */}
@@ -144,7 +142,7 @@ export default function Register() {
                 fontWeight: '600',
                 color: '#374151'
               }}>
-                📧 電子郵件 / Email
+                📧 Email
               </label>
               <input
                 type="email"
@@ -180,7 +178,7 @@ export default function Register() {
                 fontWeight: '600',
                 color: '#374151'
               }}>
-                🔒 密碼 / Password
+                🔒 Password
               </label>
               <input
                 type="password"
@@ -216,7 +214,7 @@ export default function Register() {
                 fontWeight: '600',
                 color: '#374151'
               }}>
-                👤 暱稱 / Nickname
+                👤 Nickname
               </label>
               <input
                 type="text"
@@ -288,11 +286,11 @@ export default function Register() {
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}></div>
-                  註冊中... / Registering...
+                  Registering...
                 </>
               ) : (
                 <>
-                  註冊 / Register
+                  Register
                   <span>🚀</span>
                 </>
               )}
@@ -324,7 +322,7 @@ export default function Register() {
             borderTop: '1px solid rgba(229, 231, 235, 0.5)'
           }}>
             <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>
-              已經有帳號了嗎？ / Already have an account?
+              Already have an account?
             </p>
             <button
               onClick={() => navigate('/login')}
@@ -344,7 +342,7 @@ export default function Register() {
                 e.currentTarget.style.color = '#3b82f6';
               }}
             >
-              前往登入 / Go to Login
+              Go to Login
             </button>
           </div>
         </div>
@@ -366,7 +364,7 @@ export default function Register() {
             marginBottom: '12px',
             textAlign: 'center'
           }}>
-            🌟 加入我們的競賽平台 / Join Our Competition Platform
+            🌟 Join Our Competition Platform
           </h3>
           <div style={{
             display: 'grid',
@@ -377,15 +375,15 @@ export default function Register() {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '20px', marginBottom: '4px' }}>🏆</div>
-              <span>參加競賽<br/>Join Contests</span>
+              <span>Join Contests</span>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '20px', marginBottom: '4px' }}>👥</div>
-              <span>尋找隊友<br/>Find Teammates</span>
+              <span>Find Teammates</span>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '20px', marginBottom: '4px' }}>🎯</div>
-              <span>技能配對<br/>Skill Matching</span>
+              <span>Skill Matching</span>
             </div>
           </div>
         </div>
