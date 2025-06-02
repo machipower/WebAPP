@@ -1,6 +1,6 @@
 // src/pages/MatchPreferences.jsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Auth } from 'aws-amplify';
 
@@ -23,6 +23,7 @@ const RECEIVED_API = 'https://7rkf202nmj.execute-api.ap-southeast-2.amazonaws.co
 
 export default function MatchPreferences() {
   const { contestId } = useParams();
+  const navigate = useNavigate();
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [saving, setSaving] = useState(false);
@@ -55,11 +56,11 @@ export default function MatchPreferences() {
         { headers: { Authorization: `Bearer ${idToken}` } }
       );
 
-      alert('偏好儲存成功');
+      alert('偏好儲存成功 / Preferences saved successfully');
       fetchRecommendations();
     } catch (err) {
       console.error(err);
-      alert('儲存失敗');
+      alert('儲存失敗 / Save failed');
     } finally {
       setSaving(false);
     }
@@ -105,10 +106,10 @@ export default function MatchPreferences() {
         { headers: { Authorization: `Bearer ${idToken}` } }
       );
 
-      alert(res.data.message || '邀請成功');
+      alert(res.data.message || '邀請成功 / Invitation sent successfully');
       setSentInvites([...sentInvites, toId]);
     } catch (err) {
-      alert(err.response?.data?.message || '邀請失敗');
+      alert(err.response?.data?.message || '邀請失敗 / Invitation failed');
     } finally {
       setLoadingInviteId(null);
     }
@@ -137,93 +138,733 @@ export default function MatchPreferences() {
   }, [contestId]);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">🎯 選擇你希望隊友具備的技能</h1>
-      {Object.entries(SKILL_OPTIONS).map(([category, skills]) => (
-        <div key={category} className="mb-4 border rounded-xl">
-          <button
-            type="button"
-            onClick={() => toggleCategory(category)}
-            className="w-full text-left px-4 py-3 font-semibold bg-gray-100 hover:bg-gray-200 rounded-t-xl"
-          >
-            {expandedCategories[category] ? '▼' : '▶'} {category}
-          </button>
-          {expandedCategories[category] && (
-            <div className="p-4 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-              {skills.map((skill) => {
-                const selected = selectedSkills.includes(skill);
-                return (
-                  <button
-                    key={skill}
-                    type="button"
-                    onClick={() => handleToggleSkill(skill)}
-                    className={`px-4 py-2 rounded-xl border transition-all duration-200 text-sm font-medium
-                      ${selected
-                        ? 'bg-blue-600 text-white border-blue-700 shadow-md'
-                        : 'bg-gray-50 text-gray-700 hover:bg-blue-100 border-gray-300'}
-                    `}
-                  >
-                    {selected ? '✅ ' : ''}{skill}
-                  </button>
-                );
-              })}
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #eff6ff 0%, #f3e8ff 50%, #fdf2f8 100%)',
+      position: 'relative'
+    }}>
+      {/* 背景裝飾 */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        pointerEvents: 'none'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '80px',
+          left: '40px',
+          width: '128px',
+          height: '128px',
+          background: 'rgba(147, 197, 253, 0.2)',
+          borderRadius: '50%',
+          filter: 'blur(60px)'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '160px',
+          right: '80px',
+          width: '192px',
+          height: '192px',
+          background: 'rgba(196, 181, 253, 0.15)',
+          borderRadius: '50%',
+          filter: 'blur(60px)'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '80px',
+          left: '33%',
+          width: '96px',
+          height: '96px',
+          background: 'rgba(251, 207, 232, 0.25)',
+          borderRadius: '50%',
+          filter: 'blur(40px)'
+        }}></div>
+      </div>
+
+      {/* 頂欄導航 */}
+      <div style={{
+        position: 'relative',
+        zIndex: 20,
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '16px 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          {/* Logo 區域 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{
+              background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+              borderRadius: '12px',
+              padding: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '20px' }}>🏆</span>
             </div>
-          )}
+            <div>
+              <h1 style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: 0,
+                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                cursor: 'pointer'
+              }}
+              onClick={() => navigate('/')}
+              >
+                MachiPower
+              </h1>
+              <p style={{
+                fontSize: '12px',
+                color: '#6b7280',
+                margin: 0
+              }}>
+                TeamMate Match Platform
+              </p>
+            </div>
+          </div>
+
+          {/* 導航按鈕組 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            {/* 競賽總覽按鈕 */}
+            <button
+              onClick={() => navigate('/competitions')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '10px',
+                padding: '8px 12px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <span>🏆</span>
+              <span className="hidden-mobile">Competitions Overview</span>
+            </button>
+
+            {/* 個人檔案按鈕 */}
+            <button
+              onClick={() => navigate('/profile')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '10px',
+                padding: '8px 12px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <span>👤</span>
+              <span className="hidden-mobile">Profile</span>
+            </button>
+
+            {/* 邀請總覽按鈕 */}
+            <button
+              onClick={() => navigate('/invites')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '8px 12px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #7c3aed)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #3b82f6, #8b5cf6)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <span>📬</span>
+              <span className="hidden-mobile">Invitations</span>
+            </button>
+
+            {/* 登出按鈕 */}
+            <button
+              onClick={() => {
+                // 這裡可以加上登出邏輯
+                console.log('登出');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '10px',
+                padding: '8px 12px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#dc2626',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <span>🚪</span>
+              <span className="hidden-mobile">Logout</span>
+            </button>
+          </div>
         </div>
-      ))}
+      </div>
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="mt-6 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-      >
-        儲存偏好並取得推薦
-      </button>
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '24px'
+      }}>
+        {/* 頁面標題 */}
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(255, 255, 255, 0.7)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '20px',
+            padding: '8px 16px',
+            marginBottom: '16px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <span style={{ fontSize: '16px' }}>🎯</span>
+            <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>Team Matching</span>
+          </div>
+          
+          <h1 style={{
+            fontSize: '36px',
+            fontWeight: 'bold',
+            marginBottom: '8px',
+            background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            🎯 Choose Skills You Want in Teammates 
+            
+          </h1>
+          <p style={{ color: '#6b7280', fontSize: '16px' }}>
+            Select the skills you want in your teammates, and we'll help you find the best matches!
+          </p>
+        </div>
 
-      {loadingRecs && (
-        <p className="mt-4 text-gray-600 animate-pulse">🔎 正在尋找推薦隊友，請稍候...</p>
-      )}
+        {/* 技能選擇區域 */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '24px',
+          padding: '32px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          marginBottom: '24px'
+        }}>
+          <h3 style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#1f2937',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>⚡</span>
+            Skill Preferences
+            {selectedSkills.length > 0 && (
+              <span style={{
+                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                color: 'white',
+                fontSize: '12px',
+                padding: '4px 8px',
+                borderRadius: '12px',
+                fontWeight: '500'
+              }}>
+                {selectedSkills.length} Selected
+              </span>
+            )}
+          </h3>
 
-      {!loadingRecs && recommendations.length === 0 && ['no_match', 'ok', 'fallback'].includes(recStatus) && (
-        <p className="mt-6 text-gray-500">
-          😕 目前沒有符合條件的推薦人選，請稍後再試或調整你的技能偏好。
-        </p>
-      )}
+          {Object.entries(SKILL_OPTIONS).map(([category, skills]) => (
+            <div key={category} style={{
+              marginBottom: '20px',
+              background: 'rgba(255, 255, 255, 0.6)',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}>
+              <button
+                type="button"
+                onClick={() => toggleCategory(category)}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '16px 20px',
+                  background: expandedCategories[category] ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 250, 251, 0.8)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = expandedCategories[category] ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 250, 251, 0.8)';
+                }}
+              >
+                <span style={{
+                  transition: 'transform 0.3s ease',
+                  transform: expandedCategories[category] ? 'rotate(90deg)' : 'rotate(0deg)',
+                  color: '#3b82f6'
+                }}>
+                  ▶
+                </span>
+                {category}
+              </button>
+              
+              {expandedCategories[category] && (
+                <div style={{
+                  padding: '20px',
+                  background: 'rgba(255, 255, 255, 0.4)',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                  gap: '12px'
+                }}>
+                  {skills.map((skill) => {
+                    const selected = selectedSkills.includes(skill);
+                    return (
+                      <button
+                        key={skill}
+                        type="button"
+                        onClick={() => handleToggleSkill(skill)}
+                        style={{
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: selected ? '2px solid #3b82f6' : '2px solid #e5e7eb',
+                          background: selected ? 'linear-gradient(90deg, #3b82f6, #8b5cf6)' : 'rgba(255, 255, 255, 0.8)',
+                          color: selected ? 'white' : '#374151',
+                          fontSize: '14px',
+                          fontWeight: selected ? '600' : '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          textAlign: 'center'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!selected) {
+                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                            e.currentTarget.style.borderColor = '#3b82f6';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!selected) {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                          }
+                        }}
+                      >
+                        {selected ? '✅ ' : ''}{skill}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
 
-      {recommendations.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">👥 推薦的隊友（{recStatus === 'fallback' ? '備選推薦' : '精準推薦'}）</h2>
-          <ul className="space-y-4">
-            {recommendations.map((rec) => (
-              <li key={rec.userId} className="border p-4 rounded-xl shadow">
-                <div className="font-semibold text-lg">{rec.nickname || rec.name || rec.userId}</div>
-                <div className="text-sm text-gray-500">{rec.major}</div>
-                <div className="text-sm mt-1">技能：{rec.skills?.join(', ')}</div>
-                {rec.matchScore !== undefined && (
-                  <div className="text-sm mt-1 text-green-600">
-                    相符技能：{rec.matchedSkills?.join(', ')}（分數：{rec.matchScore}）
-                  </div>
-                )}
-                <button
-                  onClick={() => sendInvite(rec.userId)}
-                  disabled={loadingInviteId === rec.userId || sentInvites.includes(rec.userId)}
-                  className={`mt-2 px-4 py-2 rounded text-white ${
-                    sentInvites.includes(rec.userId)
-                      ? 'bg-gray-400'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
+          {/* 儲存按鈕 */}
+          <button
+            onClick={handleSave}
+            disabled={saving || selectedSkills.length === 0}
+            style={{
+              width: '100%',
+              background: saving || selectedSkills.length === 0 ? 'linear-gradient(90deg, #9ca3af, #9ca3af)' : 'linear-gradient(90deg, #059669, #10b981)',
+              color: 'white',
+              fontSize: '18px',
+              fontWeight: '600',
+              padding: '16px 32px',
+              borderRadius: '16px',
+              border: 'none',
+              cursor: saving || selectedSkills.length === 0 ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              marginTop: '24px'
+            }}
+            onMouseEnter={(e) => {
+              if (!saving && selectedSkills.length > 0) {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #047857, #059669)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(5, 150, 105, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!saving && selectedSkills.length > 0) {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #059669, #10b981)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          >
+            {saving ? (
+              <>
+                <div style={{
+                  width: '20px',
+                  height: '20px',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  borderTop: '2px solid white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                處理中... / Processing...
+              </>
+            ) : (
+              <>
+                Save Preferences & Get Recommendations
+                <span>🔍</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* 載入推薦狀態 */}
+        {loadingRecs && (
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '16px',
+            padding: '24px',
+            textAlign: 'center',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: '4px solid #ddd6fe',
+              borderTop: '4px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }}></div>
+            <p style={{ color: '#6b7280', fontSize: '16px', fontWeight: '500' }}>
+              🔎 Finding recommended teammates, please wait...
+            </p>
+          </div>
+        )}
+
+        {/* 無推薦結果 */}
+        {!loadingRecs && recommendations.length === 0 && ['no_match', 'ok', 'fallback'].includes(recStatus) && (
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '16px',
+            padding: '32px',
+            textAlign: 'center',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>😕</div>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#6b7280', marginBottom: '8px' }}>
+              No Matching Recommendations
+            </h3>
+            <p style={{ color: '#9ca3af', fontSize: '14px' }}>
+              No suitable candidates found. Please try again later or adjust your skill preferences.
+            </p>
+          </div>
+        )}
+
+        {/* 推薦結果 */}
+        {recommendations.length > 0 && (
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '24px',
+            padding: '32px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              color: '#1f2937'
+            }}>
+              <span>👥</span>
+              Recommended Teammates
+              <span style={{
+                background: recStatus === 'fallback' ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg, #059669, #10b981)',
+                color: 'white',
+                fontSize: '12px',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontWeight: '500'
+              }}>
+                {recStatus === 'fallback' ? 'Alternative' : 'Precise Match'}
+              </span>
+            </h2>
+            
+            <div style={{ display: 'grid', gap: '20px' }}>
+              {recommendations.map((rec, index) => (
+                <div
+                  key={rec.userId}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    transition: 'all 0.3s ease',
+                    opacity: 0,
+                    transform: 'translateY(20px)',
+                    animation: `fadeIn 0.6s ease-out ${index * 100}ms forwards`
+                  }}
                 >
-                  {sentInvites.includes(rec.userId)
-                    ? '已邀請'
-                    : loadingInviteId === rec.userId
-                    ? '發送中...'
-                    : '發送邀請'}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  {/* 用戶基本信息 */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', marginBottom: '4px' }}>
+                        {rec.nickname || rec.name || rec.userId}
+                      </h3>
+                      <p style={{ fontSize: '14px', color: '#6b7280' }}>
+                        {rec.major} | Major
+                      </p>
+                    </div>
+                    
+                    {rec.matchScore !== undefined && (
+                      <div style={{
+                        background: 'linear-gradient(90deg, #059669, #10b981)',
+                        color: 'white',
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '600'
+                      }}>
+                      Match Score {rec.matchScore}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 技能展示 */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>
+                      Skills:
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {rec.skills?.map((skill) => (
+                        <span
+                          key={skill}
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            color: '#3b82f6',
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 匹配技能 */}
+                  {rec.matchedSkills && rec.matchedSkills.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ fontSize: '14px', color: '#059669', marginBottom: '8px', fontWeight: '500' }}>
+                        Matched Skills:
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {rec.matchedSkills.map((skill) => (
+                          <span
+                            key={skill}
+                            style={{
+                              background: 'rgba(5, 150, 105, 0.1)',
+                              color: '#059669',
+                              padding: '4px 8px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            ✓ {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 邀請按鈕 */}
+                  <button
+                    onClick={() => sendInvite(rec.userId)}
+                    disabled={loadingInviteId === rec.userId || sentInvites.includes(rec.userId)}
+                    style={{
+                      background: sentInvites.includes(rec.userId) 
+                        ? 'linear-gradient(90deg, #9ca3af, #9ca3af)' 
+                        : loadingInviteId === rec.userId 
+                        ? 'linear-gradient(90deg, #d97706, #f59e0b)' 
+                        : 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      padding: '10px 20px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      cursor: sentInvites.includes(rec.userId) || loadingInviteId === rec.userId ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!sentInvites.includes(rec.userId) && loadingInviteId !== rec.userId) {
+                        e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #7c3aed)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!sentInvites.includes(rec.userId) && loadingInviteId !== rec.userId) {
+                        e.currentTarget.style.background = 'linear-gradient(90deg, #3b82f6, #8b5cf6)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    {sentInvites.includes(rec.userId) ? (
+                      <>
+                        <span>✅</span>
+                        Invited
+                      </>
+                    ) : loadingInviteId === rec.userId ? (
+                      <>
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          border: '2px solid rgba(255, 255, 255, 0.3)',
+                          borderTop: '2px solid white',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }}></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <span>📤</span>
+                        Send Invitation
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* CSS 動畫與響應式樣式 */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .hidden-mobile {
+            display: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }
