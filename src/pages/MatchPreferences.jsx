@@ -224,19 +224,6 @@ export default function MatchPreferences() {
           </ul>
         </div>
       )}
-
-      {receivedInvites.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-4">📩 收到的邀請</h2>
-          <ul className="space-y-4">
-            {receivedInvites.map((r) => (
-              <li key={r.fromId} className="border p-4 rounded-xl shadow">
-                來自使用者 {r.fromId} 的邀請
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

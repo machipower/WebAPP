@@ -5,6 +5,7 @@ import Confirm from './pages/Confirm';
 import Profile from './pages/Profile';
 import Competitions from './pages/Competitions';
 import MatchPreferences from './pages/MatchPreferences';
+import Invites from './pages/Invites'; // ✅ 加這行！
 
 function App() {
   return (
@@ -17,12 +18,10 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/competitions" element={<Competitions />} />
         <Route path="/match/:contestId" element={<MatchPreferences />} />
-        
-        {/* 之後可加入 /profile, /competitions 等頁面 */}
+        <Route path="/invites" element={<Invites />} /> {/* ✅ 這行才會生效 */}
       </Routes>
     </Router>
   );
 }
 
 export default App;
-
