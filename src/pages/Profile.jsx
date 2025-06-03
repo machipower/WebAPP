@@ -10,37 +10,44 @@ export default function Profile() {
   const [selfIntro, setSelfIntro] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
   const [message, setMessage] = useState('');
-  const [expandedCategories, setExpandedCategories] = useState({});
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const navigate = useNavigate();
 
-  const skillOptions = {
-    '程式開發 Programming': ['Python', 'Java', 'C++', 'Go', 'JavaScript', 'TypeScript', 'R'],
-    '前端技術 Frontend': ['React', 'Vue', 'Next.js', 'HTML/CSS', 'Bootstrap', 'Tailwind CSS'],
-    '後端技術 Backend': ['Node.js', 'Express.js', 'Flask', 'Django', 'Spring Boot'],
-    '資料分析與 AI Data & AI': ['SQL', 'NoSQL', 'Pandas', 'NumPy', 'Scikit-learn', 'TensorFlow', 'PyTorch', 'OpenCV', 'Hugging Face', 'LLM 應用 (LLM Apps)'],
-    '雲端與開發工具 Cloud & Tools': ['AWS', 'GCP', 'Firebase', 'Docker', 'Git', 'CI/CD'],
-    '設計與體驗 Design & UX': ['設計 Design', 'UI/UX', 'Figma', '使用者研究 User Research', 'Prototyping'],
-    '商業與產品 Business & Product': ['行銷 Marketing', '商業分析 Business Analysis', '專案管理 Project Management', '產品思維 Product Thinking', '使用者導向設計 User-Centered Design'],
-    '軟實力 Soft Skills': ['簡報 Presentation', '溝通 Communication', '團隊合作 Teamwork', '邏輯思考 Logical Thinking', '問題解決 Problem Solving', '時間管理 Time Management', '創意思考 Creative Thinking', '敏捷開發 Agile Development']
+  const skillCategories = {
+    'Programming': ['Python', 'Java', 'C++', 'Go', 'JavaScript', 'TypeScript', 'R'],
+    'Frontend': ['React', 'Vue', 'Next.js', 'HTML/CSS', 'Bootstrap', 'Tailwind CSS'],
+    'Backend': ['Node.js', 'Express.js', 'Flask', 'Django', 'Spring Boot'],
+    'Data & AI': ['SQL', 'NoSQL', 'Pandas', 'NumPy', 'Scikit-learn', 'TensorFlow', 'PyTorch', 'OpenCV', 'Hugging Face', 'LLM Apps'],
+    'Cloud & Tools': ['AWS', 'GCP', 'Firebase', 'Docker', 'Git', 'CI/CD'],
+    'Design & UX': ['Design', 'UI/UX', 'Figma', 'User Research', 'Prototyping'],
+    'Business & Product': ['Marketing', 'Business Analysis', 'Project Management', 'Product Thinking', 'User-Centered Design'],
+    'Soft Skills': ['Presentation', 'Communication', 'Teamwork', 'Logical Thinking', 'Problem Solving', 'Time Management', 'Creative Thinking', 'Agile Development']
   };
+
+  const [expandedCategories, setExpandedCategories] = useState({});
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const user = await Auth.currentAuthenticatedUser();
-        setNickname(user.attributes.nickname || '');
-
-        const session = await Auth.currentSession();
-        const idToken = session.getIdToken().getJwtToken();
-        console.log('🔐 idToken:', idToken);
+        const nickname = user.attributes.nickname || '';
+        setNickname(nickname);
       } catch (err) {
-        console.error('❌ 取得使用者資訊失敗', err);
+        console.error('Failed to get user info', err);
       }
     };
     fetchUserInfo();
   }, []);
+
+  const toggleCategory = (category) => {
+    setExpandedCategories((prev) => ({ 
+      ...prev, 
+      [category]: !prev[category] 
+    }));
+  };
 
   const handleCheckboxChange = (skill) => {
     setSkills((prev) =>
@@ -48,23 +55,45 @@ export default function Profile() {
     );
   };
 
-  const toggleCategory = (category) => {
-    setExpandedCategories((prev) => ({ ...prev, [category]: !prev[category] }));
-  };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file?.type === 'application/pdf') {
       setResumeFile(file);
+      setMessage('');
     } else {
-      alert('Please upload PDF format resume');
+      alert('Please upload a PDF resume');
       setResumeFile(null);
     }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!nickname.trim()) {
+      newErrors.nickname = 'Nickname is required';
+    }
+    
+    if (!major.trim()) {
+      newErrors.major = 'Major is required';
+    }
+    
+    if (skills.length === 0) {
+      newErrors.skills = 'Please select at least one skill';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    
+    if (!validateForm()) {
+      setMessage('❌ Please fill in all required fields');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -77,6 +106,7 @@ export default function Profile() {
       let resumeFilename = '';
 
       if (resumeFile) {
+        setUploading(true);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         resumeFilename = `${userId}/resume_${timestamp}.pdf`;
         await Storage.put(resumeFilename, resumeFile, {
@@ -84,6 +114,7 @@ export default function Profile() {
           level: 'public'
         });
         resumeUrl = await Storage.get(resumeFilename, { level: 'public' });
+        setUploading(false);
       }
 
       const payload = {
@@ -104,15 +135,17 @@ export default function Profile() {
         }
       });
 
-      setMessage('✅ Data saved successfully!');
+      setMessage('✅ Profile saved successfully!');
+
       setTimeout(() => {
-        navigate('/');
-      }, 1000);
+        navigate('/competitions');
+      }, 1500);
     } catch (err) {
       console.error(err);
       setMessage('❌ Save failed: ' + (err?.response?.data?.error || err.message));
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -122,7 +155,7 @@ export default function Profile() {
       background: 'linear-gradient(135deg, #eff6ff 0%, #f3e8ff 50%, #fdf2f8 100%)',
       position: 'relative'
     }}>
-      {/* 背景裝飾 */}
+      {/* Background decorations */}
       <div style={{
         position: 'absolute',
         inset: 0,
@@ -131,37 +164,37 @@ export default function Profile() {
       }}>
         <div style={{
           position: 'absolute',
-          top: '80px',
-          left: '40px',
-          width: '128px',
-          height: '128px',
+          top: '15%',
+          right: '12%',
+          width: '140px',
+          height: '140px',
           background: 'rgba(147, 197, 253, 0.2)',
           borderRadius: '50%',
           filter: 'blur(60px)'
         }}></div>
         <div style={{
           position: 'absolute',
-          top: '160px',
-          right: '80px',
-          width: '192px',
-          height: '192px',
+          bottom: '25%',
+          left: '8%',
+          width: '180px',
+          height: '180px',
           background: 'rgba(196, 181, 253, 0.15)',
           borderRadius: '50%',
           filter: 'blur(60px)'
         }}></div>
         <div style={{
           position: 'absolute',
-          bottom: '80px',
-          left: '33%',
-          width: '96px',
-          height: '96px',
+          top: '45%',
+          left: '75%',
+          width: '110px',
+          height: '110px',
           background: 'rgba(251, 207, 232, 0.25)',
           borderRadius: '50%',
           filter: 'blur(40px)'
         }}></div>
       </div>
 
-      {/* 頂欄導航 */}
+      {/* Top navigation bar */}
       <div style={{
         position: 'relative',
         zIndex: 20,
@@ -178,7 +211,7 @@ export default function Profile() {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          {/* Logo 區域 */}
+          {/* Logo section */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -192,7 +225,7 @@ export default function Profile() {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <span style={{ fontSize: '20px' }}>🏆</span>
+              <span style={{ fontSize: '20px' }}>👤</span>
             </div>
             <div>
               <h1 style={{
@@ -202,30 +235,27 @@ export default function Profile() {
                 margin: 0,
                 background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
                 WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                cursor: 'pointer'
-              }}
-              onClick={() => navigate('/')}
-              >
-                MachiPower
+                WebkitTextFillColor: 'transparent'
+              }}>
+                User Profile
               </h1>
               <p style={{
                 fontSize: '12px',
                 color: '#6b7280',
                 margin: 0
               }}>
-                TeamMate Match Platform
+                Profile Setup
               </p>
             </div>
           </div>
 
-          {/* 導航按鈕組 */}
+          {/* Navigation buttons */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '12px'
           }}>
-            {/* 競賽總覽按鈕 */}
+            {/* Competitions button */}
             <button
               onClick={() => navigate('/competitions')}
               style={{
@@ -254,11 +284,12 @@ export default function Profile() {
               }}
             >
               <span>🏆</span>
-              <span className="hidden-mobile">Competitions Overview</span>
+              <span className="hidden-mobile">Competitions</span>
             </button>
 
-            {/* 個人檔案按鈕 - 當前頁面，顯示為高亮 */}
+            {/* Invitations button */}
             <button
+              onClick={() => navigate('/invites')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -270,38 +301,16 @@ export default function Profile() {
                 fontSize: '14px',
                 fontWeight: '600',
                 color: 'white',
-                cursor: 'default',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              <span>👤</span>
-              <span className="hidden-mobile">Profile</span>
-            </button>
-
-            {/* 邀請總覽按鈕 */}
-            <button
-              onClick={() => navigate('/invites')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(255, 255, 255, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '10px',
-                padding: '8px 12px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+                e.currentTarget.style.background = 'linear-gradient(90deg, #2563eb, #7c3aed)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)';
+                e.currentTarget.style.background = 'linear-gradient(90deg, #3b82f6, #8b5cf6)';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
@@ -310,11 +319,11 @@ export default function Profile() {
               <span className="hidden-mobile">Invitations</span>
             </button>
 
-            {/* 登出按鈕 */}
+            {/* Logout button */}
             <button
               onClick={() => {
-                // 這裡可以加上登出邏輯
-                console.log('登出');
+                // Add logout logic here
+                console.log('Logout');
               }}
               style={{
                 display: 'flex',
@@ -346,18 +355,17 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* 主要內容區域 */}
       <div style={{
         position: 'relative',
         zIndex: 10,
-        maxWidth: '1200px',
+        maxWidth: '800px',
         margin: '0 auto',
-        padding: '24px 24px 32px'
+        padding: '24px'
       }}>
-        {/* 頁面標題 */}
+        {/* Page title */}
         <div style={{ 
           textAlign: 'center', 
-          marginBottom: '48px',
+          marginBottom: '32px',
           paddingTop: '16px'
         }}>
           <div style={{
@@ -368,142 +376,380 @@ export default function Profile() {
             backdropFilter: 'blur(8px)',
             borderRadius: '20px',
             padding: '8px 16px',
-            marginBottom: '24px',
+            marginBottom: '16px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
-            <span style={{ fontSize: '16px' }}>👤</span>
-            <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+            <span style={{ fontSize: '16px' }}>✨</span>
+            <span style={{ 
+              fontSize: '14px', 
+              fontWeight: '500', 
+              color: '#374151' 
+            }}>
               Profile Setup
             </span>
-            <span style={{ fontSize: '16px' }}>👤</span>
           </div>
           
-          <h1 style={{
-            fontSize: '48px',
+          <h2 style={{
+            fontSize: '32px',
             fontWeight: 'bold',
-            marginBottom: '16px',
+            marginBottom: '8px',
             background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899)',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            lineHeight: '1.2'
+            WebkitTextFillColor: 'transparent'
           }}>
-            👤 Edit Personal Profile
-          </h1>
-          
-          <p style={{
-            fontSize: '18px',
-            color: '#6b7280',
-            maxWidth: '600px',
-            margin: '0 auto',
-            lineHeight: '1.6'
+            Edit Profile
+          </h2>
+          <p style={{ 
+            color: '#6b7280', 
+            fontSize: '16px' 
           }}>
-            Complete your profile to get better teammate recommendations
-            
+            Set up your personal information to join competitions
           </p>
         </div>
 
-        {/* 表單容器 */}
+        {/* Form section */}
         <div style={{
           background: 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(8px)',
           borderRadius: '24px',
-          padding: '40px',
+          padding: '32px',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          maxWidth: '800px',
-          margin: '0 auto'
+          border: '1px solid rgba(255, 255, 255, 0.2)'
         }}>
           <form onSubmit={handleSubmit}>
-            {/* 基本資訊區域 */}
-            <div style={{ marginBottom: '40px' }}>
+            {/* Basic Information Section */}
+            <div style={{ marginBottom: '32px' }}>
               <h3 style={{
-                fontSize: '20px',
+                fontSize: '18px',
                 fontWeight: '600',
                 color: '#1f2937',
-                marginBottom: '24px',
+                marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <span>ℹ️</span>
+                <span>👤</span>
                 Basic Information
               </h3>
-              
+
               <div style={{ 
                 display: 'grid', 
-                gap: '20px', 
-                gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(2, 1fr)',
-                marginBottom: '20px'
+                gap: '20px' 
               }}>
-                <input 
-                  style={{
-                    width: '100%',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '16px',
-                    padding: '16px 20px',
-                    fontSize: '16px',
-                    transition: 'all 0.3s ease',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    fontWeight: '500',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="Nickname" 
-                  value={nickname} 
-                  onChange={(e) => setNickname(e.target.value)}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                />
-                
-                <input 
-                  style={{
-                    width: '100%',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '16px',
-                    padding: '16px 20px',
-                    fontSize: '16px',
-                    transition: 'all 0.3s ease',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    fontWeight: '500',
-                    boxSizing: 'border-box'
-                  }}
-                  placeholder="Major" 
-                  value={major} 
-                  onChange={(e) => setMajor(e.target.value)}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#3b82f6';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                />
+                {/* Nickname */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151'
+                  }}>
+                    🏷️ Nickname *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your nickname"
+                    value={nickname}
+                    onChange={(e) => {
+                      setNickname(e.target.value);
+                      if (errors.nickname) {
+                        setErrors(prev => ({ ...prev, nickname: '' }));
+                      }
+                    }}
+                    required
+                    style={{
+                      width: '100%',
+                      border: errors.nickname ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      fontSize: '16px',
+                      transition: 'all 0.3s ease',
+                      background: 'rgba(255, 255, 255, 0.9)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = errors.nickname ? '#ef4444' : '#3b82f6';
+                      e.target.style.boxShadow = `0 0 0 3px rgba(${errors.nickname ? '239, 68, 68' : '59, 130, 246'}, 0.1)`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = errors.nickname ? '#ef4444' : '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                  {errors.nickname && (
+                    <p style={{
+                      color: '#ef4444',
+                      fontSize: '12px',
+                      marginTop: '4px',
+                      fontWeight: '500'
+                    }}>
+                      {errors.nickname}
+                    </p>
+                  )}
+                </div>
+
+                {/* Major */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#374151'
+                  }}>
+                    🎓 Major *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your major"
+                    value={major}
+                    onChange={(e) => {
+                      setMajor(e.target.value);
+                      if (errors.major) {
+                        setErrors(prev => ({ ...prev, major: '' }));
+                      }
+                    }}
+                    required
+                    style={{
+                      width: '100%',
+                      border: errors.major ? '2px solid #ef4444' : '2px solid #e5e7eb',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      fontSize: '16px',
+                      transition: 'all 0.3s ease',
+                      background: 'rgba(255, 255, 255, 0.9)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = errors.major ? '#ef4444' : '#3b82f6';
+                      e.target.style.boxShadow = `0 0 0 3px rgba(${errors.major ? '239, 68, 68' : '59, 130, 246'}, 0.1)`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = errors.major ? '#ef4444' : '#e5e7eb';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                  {errors.major && (
+                    <p style={{
+                      color: '#ef4444',
+                      fontSize: '12px',
+                      marginTop: '4px',
+                      fontWeight: '500'
+                    }}>
+                      {errors.major}
+                    </p>
+                  )}
+                </div>
               </div>
-              
-              <textarea 
+            </div>
+
+            {/* Skills Section */}
+            <div style={{ marginBottom: '32px' }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#1f2937',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>⚡</span>
+                Skills *
+                {skills.length > 0 && (
+                  <span style={{
+                    background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                    color: 'white',
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontWeight: '500'
+                  }}>
+                    {skills.length} selected
+                  </span>
+                )}
+              </h3>
+
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.6)',
+                borderRadius: '16px',
+                border: errors.skills ? '2px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.3)',
+                padding: errors.skills ? '18px' : '20px'
+              }}>
+                {Object.entries(skillCategories).map(([category, categorySkills]) => (
+                  <div key={category} style={{
+                    marginBottom: '16px',
+                    background: 'rgba(255, 255, 255, 0.4)',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}>
+                    {/* Category header button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toggleCategory(category);
+                        if (errors.skills) {
+                          setErrors(prev => ({ ...prev, skills: '' }));
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '12px 16px',
+                        background: expandedCategories[category] ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 250, 251, 0.8)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#374151',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = expandedCategories[category] ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 250, 251, 0.8)';
+                      }}
+                    >
+                      <span style={{
+                        transition: 'transform 0.3s ease',
+                        transform: expandedCategories[category] ? 'rotate(90deg)' : 'rotate(0deg)',
+                        color: '#3b82f6'
+                      }}>
+                        ▶
+                      </span>
+                      {category}
+                      <span style={{
+                        marginLeft: 'auto',
+                        fontSize: '12px',
+                        color: '#6b7280',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: '8px'
+                      }}>
+                        {categorySkills.filter(skill => skills.includes(skill)).length}/{categorySkills.length}
+                      </span>
+                    </button>
+                    
+                    {/* Skill options */}
+                    {expandedCategories[category] && (
+                      <div style={{
+                        padding: '16px',
+                        background: 'rgba(255, 255, 255, 0.3)',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                        gap: '8px'
+                      }}>
+                        {categorySkills.map((skill) => {
+                          const selected = skills.includes(skill);
+                          return (
+                            <label
+                              key={skill}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: selected ? '2px solid #3b82f6' : '2px solid #e5e7eb',
+                                background: selected ? 'linear-gradient(90deg, #3b82f6, #8b5cf6)' : 'rgba(255, 255, 255, 0.8)',
+                                color: selected ? 'white' : '#374151',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                fontSize: '12px',
+                                fontWeight: selected ? '600' : '500'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!selected) {
+                                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                                  e.currentTarget.style.borderColor = '#3b82f6';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!selected) {
+                                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+                                  e.currentTarget.style.borderColor = '#e5e7eb';
+                                }
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                value={skill}
+                                checked={selected}
+                                onChange={() => {
+                                  handleCheckboxChange(skill);
+                                  if (errors.skills) {
+                                    setErrors(prev => ({ ...prev, skills: '' }));
+                                  }
+                                }}
+                                style={{ display: 'none' }}
+                              />
+                              <span style={{ fontSize: '14px' }}>
+                                {selected ? '✅' : '⚪'}
+                              </span>
+                              {skill}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {errors.skills && (
+                <p style={{
+                  color: '#ef4444',
+                  fontSize: '12px',
+                  marginTop: '8px',
+                  fontWeight: '500'
+                }}>
+                  {errors.skills}
+                </p>
+              )}
+            </div>
+
+            {/* Self Introduction Section */}
+            <div style={{ marginBottom: '32px' }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#1f2937',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>📝</span>
+                Self Introduction
+                <span style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  fontWeight: '400'
+                }}>
+                  (Optional)
+                </span>
+              </h3>
+
+              <textarea
+                placeholder="Share your experience, interests, or special skills..."
+                value={selfIntro}
+                onChange={(e) => setSelfIntro(e.target.value)}
+                rows={5}
                 style={{
                   width: '100%',
                   border: '2px solid #e5e7eb',
-                  borderRadius: '16px',
-                  padding: '16px 20px',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
                   fontSize: '16px',
-                  minHeight: '120px',
-                  resize: 'vertical',
                   transition: 'all 0.3s ease',
                   background: 'rgba(255, 255, 255, 0.9)',
-                  fontWeight: '500',
-                  boxSizing: 'border-box'
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
                 }}
-                placeholder="Self Introduction" 
-                value={selfIntro} 
-                onChange={(e) => setSelfIntro(e.target.value)}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#3b82f6';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -515,195 +761,70 @@ export default function Profile() {
               />
             </div>
 
-            {/* 技能選擇區域 */}
-            <div style={{ marginBottom: '40px' }}>
+            {/* Resume Upload Section */}
+            <div style={{ marginBottom: '32px' }}>
               <h3 style={{
-                fontSize: '20px',
+                fontSize: '18px',
                 fontWeight: '600',
                 color: '#1f2937',
-                marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>⚡</span>
-                Your Skills（Multiple Selection）
-                {skills.length > 0 && (
-                  <span style={{
-                    background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
-                    color: 'white',
-                    fontSize: '12px',
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    fontWeight: '500'
-                  }}>
-                    {skills.length} Selected
-                  </span>
-                )}
-              </h3>
-              
-              {Object.entries(skillOptions).map(([category, options]) => (
-                <div key={category} style={{
-                  marginBottom: '24px',
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  borderRadius: '20px',
-                  overflow: 'hidden',
-                  border: '1px solid rgba(255, 255, 255, 0.3)'
-                }}>
-                  <button
-                    type="button"
-                    onClick={() => toggleCategory(category)}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '20px 24px',
-                      background: expandedCategories[category] ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 250, 251, 0.8)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      color: '#374151',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = expandedCategories[category] ? 'rgba(59, 130, 246, 0.1)' : 'rgba(249, 250, 251, 0.8)';
-                    }}
-                  >
-                    <span style={{
-                      transition: 'transform 0.3s ease',
-                      transform: expandedCategories[category] ? 'rotate(90deg)' : 'rotate(0deg)',
-                      color: '#3b82f6'
-                    }}>
-                      ▶
-                    </span>
-                    {category}
-                  </button>
-                  
-                  {expandedCategories[category] && (
-                    <div style={{
-                      padding: '24px',
-                      background: 'rgba(255, 255, 255, 0.4)',
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                      gap: '12px'
-                    }}>
-                      {options.map((skill) => {
-                        const selected = skills.includes(skill);
-                        return (
-                          <label key={skill} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            cursor: 'pointer',
-                            padding: '12px 16px',
-                            borderRadius: '12px',
-                            transition: 'all 0.3s ease',
-                            background: selected ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                            border: selected ? '2px solid #3b82f6' : '2px solid transparent'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!selected) {
-                              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!selected) {
-                              e.currentTarget.style.background = 'transparent';
-                            }
-                          }}>
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              onChange={() => handleCheckboxChange(skill)}
-                              style={{
-                                width: '18px',
-                                height: '18px',
-                                accentColor: '#3b82f6'
-                              }}
-                            />
-                            <span style={{ 
-                              fontSize: '14px', 
-                              color: '#374151', 
-                              fontWeight: selected ? '600' : '500'
-                            }}>
-                              {selected ? '✅ ' : ''}{skill}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* 履歷上傳區域 */}
-            <div style={{ marginBottom: '40px' }}>
-              <h3 style={{
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#1f2937',
-                marginBottom: '16px',
+                marginBottom: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}>
                 <span>📄</span>
-                Upload Resume（PDF）
+                Resume Upload
+                <span style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  fontWeight: '400'
+                }}>
+                  (Optional)
+                </span>
               </h3>
-              
+
               <div style={{
-                background: 'rgba(255, 255, 255, 0.6)',
                 border: '2px dashed #d1d5db',
-                borderRadius: '20px',
-                padding: '32px',
+                borderRadius: '12px',
+                padding: '24px',
                 textAlign: 'center',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                background: 'rgba(255, 255, 255, 0.6)'
               }}>
-                <div style={{
-                  fontSize: '48px',
-                  marginBottom: '16px',
-                  color: '#6b7280'
-                }}>📎</div>
-                <input 
-                  type="file" 
-                  accept="application/pdf" 
+                <div style={{ marginBottom: '16px' }}>
+                  <span style={{ fontSize: '32px' }}>📎</span>
+                </div>
+                <input
+                  type="file"
+                  accept="application/pdf"
                   onChange={handleFileChange}
                   style={{
-                    width: '100%',
-                    padding: '12px',
-                    fontSize: '16px',
-                    cursor: 'pointer',
-                    borderRadius: '12px',
-                    border: '1px solid #d1d5db',
-                    background: 'rgba(255, 255, 255, 0.8)'
+                    marginBottom: '12px',
+                    fontSize: '14px'
                   }}
                 />
                 {resumeFile && (
-                  <p style={{ 
-                    marginTop: '16px', 
-                    color: '#059669', 
-                    fontSize: '16px',
-                    fontWeight: '500'
+                  <p style={{
+                    color: '#059669',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    margin: '8px 0 0 0'
                   }}>
-                    ✅ 已選擇檔案：{resumeFile.name}
-                    <br />
-                    <span style={{ fontSize: '14px' }}>
-                      File selected: {resumeFile.name}
-                    </span>
+                    ✅ File selected: {resumeFile.name}
                   </p>
                 )}
+                <p style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  margin: '8px 0 0 0'
+                }}>
+                  PDF format only
+                </p>
               </div>
             </div>
 
-            {/* 提交按鈕 */}
-            <button 
+            {/* Submit Button */}
+            <button
               type="submit"
               disabled={loading}
               style={{
@@ -712,7 +833,7 @@ export default function Profile() {
                 color: 'white',
                 fontSize: '18px',
                 fontWeight: '600',
-                padding: '20px 32px',
+                padding: '16px 32px',
                 borderRadius: '16px',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
@@ -747,26 +868,26 @@ export default function Profile() {
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}></div>
-                  Processing...
+                  {uploading ? 'Uploading...' : 'Saving...'}
                 </>
               ) : (
                 <>
-                  Save & Continue
-                  <span>➡️</span>
+                  Save & Go to Competitions
+                  <span>🚀</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* 訊息顯示 */}
+          {/* Message Display */}
           {message && (
             <div style={{
-              marginTop: '32px',
-              padding: '20px',
-              borderRadius: '16px',
-              textAlign: 'center',
-              fontSize: '16px',
+              marginTop: '20px',
+              padding: '16px',
+              borderRadius: '12px',
+              fontSize: '14px',
               fontWeight: '500',
+              textAlign: 'center',
               background: message.startsWith('✅') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
               color: message.startsWith('✅') ? '#059669' : '#dc2626',
               border: `1px solid ${message.startsWith('✅') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
@@ -776,47 +897,36 @@ export default function Profile() {
           )}
         </div>
 
-        {/* 底部提示 */}
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '64px' 
+        {/* Bottom Hint */}
+        <div style={{
+          marginTop: '32px',
+          background: 'rgba(255, 255, 255, 0.6)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          textAlign: 'center'
         }}>
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: '20px',
-            padding: '32px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            maxWidth: '600px',
-            margin: '0 auto'
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: '600',
+            color: '#1f2937',
+            marginBottom: '8px'
           }}>
-            <div style={{ 
-              fontSize: '40px', 
-              marginBottom: '16px' 
-            }}>
-              🚀
-            </div>
-            <h3 style={{
-              fontWeight: '600',
-              color: '#1f2937',
-              marginBottom: '8px',
-              fontSize: '18px'
-            }}>
-              Ready to Find Your Team?
-            </h3>
-            <p style={{ 
-              fontSize: '14px', 
-              color: '#6b7280',
-              lineHeight: '1.5'
-            }}>
-              After saving your profile, you can start browsing competitions and finding teammates
-            </p>
-          </div>
+            💡 After Profile Setup
+          </h3>
+          <p style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            margin: 0
+          }}>
+            You'll be able to join competitions and match with other participants
+          </p>
         </div>
       </div>
 
-      {/* CSS 動畫與響應式樣式 */}
+      {/* CSS animations and responsive styles */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

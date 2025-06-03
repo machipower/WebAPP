@@ -231,7 +231,7 @@ export default function Invites() {
               }}
             >
               <span>🏆</span>
-              <span className="hidden-mobile">競賽總覽 / Competitions</span>
+              <span className="hidden-mobile">Competitions</span>
             </button>
 
             {/* 個人檔案按鈕 */}
@@ -263,7 +263,7 @@ export default function Invites() {
               }}
             >
               <span>👤</span>
-              <span className="hidden-mobile">個人檔案 / Profile</span>
+              <span className="hidden-mobile">Profile</span>
             </button>
 
             {/* 邀請總覽按鈕 - 當前頁面，顯示為高亮 */}
@@ -284,7 +284,7 @@ export default function Invites() {
               }}
             >
               <span>📬</span>
-              <span className="hidden-mobile">邀請總覽 / Invitations</span>
+              <span className="hidden-mobile">Invitations</span>
             </button>
 
             {/* 登出按鈕 */}
@@ -317,7 +317,7 @@ export default function Invites() {
               }}
             >
               <span>🚪</span>
-              <span className="hidden-mobile">登出 / Logout</span>
+              <span className="hidden-mobile">Logout</span>
             </button>
           </div>
         </div>
@@ -839,7 +839,7 @@ export default function Invites() {
               marginBottom: '8px',
               fontSize: '18px'
             }}>
-              Build Your Dream Team / 組建夢想團隊
+              Build Your Dream Team
             </h3>
             <p style={{ 
               fontSize: '14px', 
@@ -847,8 +847,7 @@ export default function Invites() {
               lineHeight: '1.5'
             }}>
               Connect with talented teammates and create amazing projects together
-              <br />
-              與優秀的隊友建立聯繫，共同創造精彩的專案
+
             </p>
           </div>
         </div>

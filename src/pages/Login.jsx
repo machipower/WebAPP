@@ -238,7 +238,7 @@ export default function Login() {
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                   }}></div>
-                  登入中... / Signing In...
+                  Signing In...
                 </>
               ) : (
                 <>

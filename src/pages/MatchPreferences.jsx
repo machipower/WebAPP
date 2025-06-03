@@ -5,14 +5,14 @@ import axios from 'axios';
 import { Auth } from 'aws-amplify';
 
 const SKILL_OPTIONS = {
-  '程式開發 Programming': ['Python', 'Java', 'C++', 'Go', 'JavaScript', 'TypeScript', 'R'],
-  '前端技術 Frontend': ['React', 'Vue', 'Next.js', 'HTML/CSS', 'Bootstrap', 'Tailwind CSS'],
-  '後端技術 Backend': ['Node.js', 'Express.js', 'Flask', 'Django', 'Spring Boot'],
-  '資料分析與 AI Data & AI': ['SQL', 'NoSQL', 'Pandas', 'NumPy', 'Scikit-learn', 'TensorFlow', 'PyTorch', 'OpenCV', 'Hugging Face', 'LLM 應用 (LLM Apps)'],
-  '雲端與開發工具 Cloud & Tools': ['AWS', 'GCP', 'Firebase', 'Docker', 'Git', 'CI/CD'],
-  '設計與體驗 Design & UX': ['設計 Design', 'UI/UX', 'Figma', '使用者研究 User Research', 'Prototyping'],
-  '商業與產品 Business & Product': ['行銷 Marketing', '商業分析 Business Analysis', '專案管理 Project Management', '產品思維 Product Thinking', '使用者導向設計 User-Centered Design'],
-  '軟實力 Soft Skills': ['簡報 Presentation', '溝通 Communication', '團隊合作 Teamwork', '邏輯思考 Logical Thinking', '問題解決 Problem Solving', '時間管理 Time Management', '創意思考 Creative Thinking', '敏捷開發 Agile Development']
+  'Programming': ['Python', 'Java', 'C++', 'Go', 'JavaScript', 'TypeScript', 'R'],
+  'Frontend': ['React', 'Vue', 'Next.js', 'HTML/CSS', 'Bootstrap', 'Tailwind CSS'],
+  'Backend': ['Node.js', 'Express.js', 'Flask', 'Django', 'Spring Boot'],
+  'AI Data & AI': ['SQL', 'NoSQL', 'Pandas', 'NumPy', 'Scikit-learn', 'TensorFlow', 'PyTorch', 'OpenCV', 'Hugging Face', 'LLM 應用 (LLM Apps)'],
+  'Cloud & Tools': ['AWS', 'GCP', 'Firebase', 'Docker', 'Git', 'CI/CD'],
+  'Design & UX': ['Design', 'UI/UX', 'Figma', 'User Research', 'Prototyping'],
+  'Business & Product': ['Marketing', 'Business Analysis', 'Project Management', 'Product Thinking', 'User-Centered Design'],
+  'Soft Skills': ['Presentation', 'Communication', 'Teamwork', 'Logical Thinking', 'Problem Solving', 'Time Management', 'Creative Thinking', 'Agile Development']
 };
 
 const PREFERENCE_API = 'https://7rkf202nmj.execute-api.ap-southeast-2.amazonaws.com/prod/match-preference';
@@ -673,14 +673,14 @@ export default function MatchPreferences() {
               <span>👥</span>
               Recommended Teammates
               <span style={{
-                background: recStatus === 'fallback' ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg, #059669, #10b981)',
+                background: recStatus === 'fallback' ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg,rgb(93, 102, 228),rgb(110, 121, 247))',
                 color: 'white',
-                fontSize: '12px',
-                padding: '4px 12px',
+                fontSize: '20px',
+                padding: '10px 12px',
                 borderRadius: '20px',
                 fontWeight: '500'
               }}>
-                {recStatus === 'fallback' ? 'Alternative' : 'Precise Match'}
+                {recStatus === 'fallback' ? 'No matching results found. Here are other participants in this contest' : 'Precise Match. Here are candidates based on your preferences'}
               </span>
             </h2>
             
